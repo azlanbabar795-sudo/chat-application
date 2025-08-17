@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Secure Omagle WebRTC</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #ACB6E5);
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+
+  /* Header styles */
+  .header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 30px;
+    text-align: center;
+  }
+  .logo {
+    width: 180px;
+    height: auto;
+    margin-bottom: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  h1 {
+    font-size: 2.5em;
+    margin: 0;
+    color: #fff;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+  }
+  .name {
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #fff;
+    margin-top: 8px;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  }
+
+  /* Controls styling */
+  .controls {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
+  }
+  label {
+    font-weight: 600;
+    margin-right: 10px;
+    color: #fff;
+  }
+  select {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 1em;
+  }
+  button {
+    padding: 12px 25px;
+    font-size: 1.2em;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+  }
+  #mediaBtn {
+    background-color: #27ae60;
+    color: #fff;
+  }
+  #mediaBtn:hover {
+    background-color: #219150;
+  }
+  #connectBtn {
+    background-color: #2980b9;
+    color: #fff;
+  }
+  #connectBtn:disabled {
+    background-color: #7f8c8d;
+    cursor: not-allowed;
+  }
+  #connectBtn:hover:enabled {
+    background-color: #2471a3;
+  }
+
+  /* Main video section */
+  .main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  #videos {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    max-width: 1000px;
+    width: 100%;
+    margin-bottom: 30px;
+  }
+  video {
+    width: 45%;
+    max-width: 600px;
+    aspect-ratio: 16/9;
+    background-color: #000;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+
+  /* Buttons below video */
+  .bottom-buttons {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  #stopBtn {
+    background-color: #e74c3c;
+    color: #fff;
+  }
+  #stopBtn:disabled {
+    background-color: #bd4b3b;
+    cursor: not-allowed;
+  }
+  #nextBtn {
+    background-color: #3498db;
+    color: #fff;
+  }
+  #nextBtn:disabled {
+    background-color: #2980b9;
+    cursor: not-allowed;
+  }
+  #sendBtn {
+    padding: 10px 20px;
+    background-color: #27ae60;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  #sendBtn:disabled {
+    background-color: #7f8c8d;
+    cursor: not-allowed;
+  }
+
+  /* Message panel */
+  #messages {
+    width: 90%;
+    max-width: 600px;
+    height: 200px;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 10px;
+    overflow-y: auto;
+    background: rgba(255,255,255,0.8);
+    margin-bottom: 10px;
+  }
+  #messageContainer {
+    display: flex;
+    gap: 10px;
+    width: 90%;
+    max-width: 600px;
+  }
+  #messageInput {
+    flex: 1;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  #status {
+    font-size: 1em;
+    font-weight: 600;
+    margin-top: 10px;
+    color: #fff;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+  }
+
+  @media(max-width: 768px){
+    video {
+      width: 90%;
+    }
+  }
+</style>
+</head>
+<body>
+<div class="header">
+  <img src="https://images.unsplash.com/photo-1619190219137-2f0b3f37b77f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" class="logo" alt="Omagle Logo" />
+  <h1>Omagle</h1>
+  <div class="name">Connecting You Globally</div>
+</div>
+
+<div class="controls">
+  <div>
+    <label for="countrySelect">Select Country:</label>
+    <select id="countrySelect">
+      <!-- All country options -->
+      <option value="AF">Afghanistan</option>
+      <option value="AL">Albania</option>
+      <!-- ... all other countries as above ... -->
+      <option value="ZW">Zimbabwe</option>
+    </select>
+  </div>
+  <button id="mediaBtn">Grant Camera & Microphone</button>
+  <button id="connectBtn" disabled>Connect / Join Room</button>
+</div>
+
+<div class="main">
+  <div id="videos">
+    <video id="localVideo" autoplay muted></video>
+    <video id="remoteVideo" autoplay></video>
+  </div>
+  <div class="bottom-buttons">
+    <button id="stopBtn" disabled>Stop</button>
+    <button id="nextBtn" disabled>Next</button>
+  </div>
+  <div id="messages"></div>
+  <div id="messageContainer" style="width:90%; max-width:600px; display:flex; gap:10px; align-items:center;">
+    <input type="text" id="messageInput" placeholder="Type a message..." style="flex:1; padding:10px; border-radius:5px; border:1px solid #ccc;" />
+    <button id="sendBtn" disabled>Send</button>
+  </div>
+  <div id="status">Status: Not connected. Grant media to start.</div>
+</div>
+
+<script>
+const signalingServerUrlBase = 'wss://your-secure-signal-server.com'; // Use WSS for security
+let ws = null;
+let peerConnection = null;
+let dataChannel = null;
+let localStream = null;
+let isInitiator = false;
+let hasRemoteStream = false;
+
+/* Utility function for logging */
+function log(msg) {
+  const p = document.createElement('p');
+  p.textContent = msg;
+  document.getElementById('messages').appendChild(p);
+  document.getElementById('messages').scrollTop = document.getElementById('messages').scrollHeight;
+}
+
+/* Connect to the signaling server with session token (if applicable) */
+function connectWebSocket() {
+  const countryCode = document.getElementById('countrySelect').value;
+  // For real security, include tokens or auth headers on server side
+  const url = `${signalingServerUrlBase}?country=${countryCode}`; // add token param if needed
+  if (ws && ws.readyState === WebSocket.OPEN) {
+    ws.close();
+  }
+  ws = new WebSocket(url);
+  ws.onopen = () => {
+    document.getElementById('status').textContent = 'Connected to signaling server. Grant media to start.';
+    document.getElementById('connectBtn').disabled = false;
+  };
+  ws.onmessage = (msg) => {
+    const data = JSON.parse(msg.data);
+    handleSignalingData(data);
+  };
+  ws.onerror = (err) => {
+    console.error('WebSocket error', err);
+    document.getElementById('status').textContent = 'WebSocket error.';
+  };
+  ws.onclose = () => {
+    document.getElementById('status').textContent = 'WebSocket closed.';
+  };
+}
+
+/* Reconnect on country change */
+document.getElementById('countrySelect').addEventListener('change', () => {
+  connectWebSocket();
+});
+
+/* Grant media devices */
+document.getElementById('mediaBtn').onclick = async () => {
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+    document.getElementById('localVideo').srcObject = localStream;
+    document.getElementById('status').textContent = 'Camera & Microphone granted.';
+    document.getElementById('connectBtn').disabled = false;
+  } catch (err) {
+    alert('Error accessing media devices: ' + err);
+  }
+};
+
+/* Connect / Join */
+document.getElementById('connectBtn').onclick = () => {
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    connectWebSocket();
+  }
+  startPeerConnection();
+  isInitiator = true; // you can implement roles as needed
+
+  if (localStream) {
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+  }
+
+  peerConnection.createOffer()
+    .then(offer => {
+      peerConnection.setLocalDescription(offer);
+      sendSignaling({ type: 'offer', sdp: offer.sdp });
+      document.getElementById('status').textContent = 'Offer sent, waiting for answer...';
+    });
+
+  // Enable messaging and control buttons
+  document.getElementById('sendBtn').disabled = false;
+  document.getElementById('stopBtn').disabled = false;
+  document.getElementById('nextBtn').disabled = false;
+};
+
+/* Stop session */
+document.getElementById('stopBtn').onclick = () => {
+  closePeerConnection();
+  document.getElementById('status').textContent = 'Connection stopped.';
+  document.getElementById('stopBtn').disabled = true;
+  document.getElementById('nextBtn').disabled = true;
+  document.getElementById('connectBtn').disabled = false;
+};
+
+/* Next session */
+document.getElementById('nextBtn').onclick = () => {
+  closePeerConnection();
+  document.getElementById('status').textContent = 'Connecting to next session...';
+  startPeerConnection();
+  if (localStream) {
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+  }
+  peerConnection.createOffer()
+    .then(offer => {
+      peerConnection.setLocalDescription(offer);
+      sendSignaling({ type: 'offer', sdp: offer.sdp });
+      document.getElementById('status').textContent = 'New offer sent.';
+    });
+};
+
+/* Send message over data channel */
+document.getElementById('sendBtn').onclick = () => {
+  const msg = document.getElementById('messageInput').value;
+  if (msg && dataChannel && dataChannel.readyState === 'open') {
+    dataChannel.send(msg);
+    log('You: ' + msg);
+    document.getElementById('messageInput').value = '';
+  }
+};
+
+/* WebRTC functions */
+function startPeerConnection() {
+  if (peerConnection) return;
+  createPeerConnection();
+  if (localStream) {
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+  }
+}
+function createPeerConnection() {
+  peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  peerConnection.onicecandidate = (event) => {
+    if (event.candidate) sendSignaling({ type: 'candidate', candidate: event.candidate });
+  };
+  peerConnection.ontrack = (event) => {
+    if (!hasRemoteStream) {
+      document.getElementById('remoteVideo').srcObject = event.streams[0];
+      hasRemoteStream = true;
+    }
+  };
+  peerConnection.ondatachannel = (event) => {
+    dataChannel = event.channel;
+    setupDataChannel();
+  };
+  if (isInitiator) {
+    dataChannel = peerConnection.createDataChannel('chat');
+    setupDataChannel();
+  }
+}
+function setupDataChannel() {
+  dataChannel.onopen = () => {
+    log('Data channel open');
+    document.getElementById('sendBtn').disabled = false;
+  };
+  dataChannel.onmessage = (event) => {
+    log('Peer: ' + event.data);
+  };
+  dataChannel.onclose = () => {
+    log('Data channel closed');
+    document.getElementById('sendBtn').disabled = true;
+  };
+}
+function sendSignaling(data) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(data));
+}
+function handleSignalingData(data) {
+  switch (data.type) {
+    case 'offer':
+      createPeerConnection();
+      isInitiator = false;
+      peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: data.sdp }));
+      if (localStream) {
+        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+      }
+      peerConnection.createAnswer().then(answer => {
+        peerConnection.setLocalDescription(answer);
+        sendSignaling({ type: 'answer', sdp: answer.sdp });
+      });
+      break;
+    case 'answer':
+      peerConnection.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: data.sdp }));
+      break;
+    case 'candidate':
+      peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+      break;
+  }
+}
+function closePeerConnection() {
+  if (peerConnection) {
+    peerConnection.close();
+    peerConnection = null;
+  }
+  hasRemoteStream = false;
+  document.getElementById('remoteVideo').srcObject = null;
+  if (dataChannel) {
+    dataChannel.close();
+    dataChannel = null;
+  }
+  document.getElementById('status').textContent = 'Connection closed.';
+}
+
+/* Auto shutdown media on page visibility change or unload for security */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) {
+    // user navigates away or switches tab
+    shutdownMedia();
+  }
+});
+window.addEventListener('beforeunload', () => {
+  shutdownMedia();
+});
+function shutdownMedia() {
+  // Stop all tracks
+  if (localStream) {
+    localStream.getTracks().forEach(track => track.stop());
+    localStream = null;
+    document.getElementById('localVideo').srcObject = null;
+  }
+  // Close connection
+  closePeerConnection();
+  // Disable buttons
+  document.getElementById('connectBtn').disabled = true;
+  document.getElementById('status').textContent = 'Media streams stopped for security.';
+}
+
+// Initialize connection on page load
+window.onload = () => {
+  connectWebSocket();
+};
+</script>
+</body>
+</html>
